@@ -57,8 +57,12 @@ MonoBehaviour:
   SmoothingTimeMultiplier: 2
   MaxDistanceFromRoller: 0.75
   Thrust: 250
-  MaxVelocity: 30
-  JumpVelocity: 50
+  MaxVelocity: 25
+  HoverVelocity: 40
+  MaxHoverVelocity: 15
+  HoverEnergy: 100
+  HoverEnergyRegenSpeed: 5
+  MaxFlyHeight: 2
 --- !u!1 &1937095164888423352
 GameObject:
   m_ObjectHideFlags: 0
@@ -244,8 +248,8 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1937095165840947258}
   serializedVersion: 2
-  m_Mass: 8.5
-  m_Drag: 0
+  m_Mass: 17
+  m_Drag: 0.5
   m_AngularDrag: 1
   m_UseGravity: 1
   m_IsKinematic: 0

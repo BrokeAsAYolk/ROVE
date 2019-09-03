@@ -19,8 +19,13 @@ public class PrimaryController : MonoBehaviour
     float BodySmoothingTime;
     float NewSmoothingTime;
     public float Thrust = 100.0f;
-    public float MaxVelocity = 30f;
-    public float JumpVelocity = 50f;
+    public float MaxVelocity = 20f;
+    public float HoverVelocity = 40f;
+    public float MaxHoverVelocity = 15f;
+    public float HoverEnergy = 100f;
+    public float HoverEnergyRegenSpeed = 5.0f;
+    public float MaxFlyHeight = 2.0f;
+    public float GravityMultiplier = 2.0f;
 
     // our private variables
     private Rigidbody rb;
@@ -28,6 +33,9 @@ public class PrimaryController : MonoBehaviour
     private Vector3 headPosOffset;
     private Vector3 neckPosOffset;
     private float distanceToGround;
+
+    private Vector3 launchPoint;
+    private bool lockY = false;
     
     // Start is called before the first frame update
     void Start()
@@ -57,6 +65,13 @@ public class PrimaryController : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
+        if (IsGrounded())
+        {
+            launchPoint = Roller.transform.position;
+        }
+
+        // add a gravity multiplier that only affects the player
+        rb.AddForce(new Vector3(0.0f, Physics.gravity.y * GravityMultiplier, 0.0f), ForceMode.Acceleration);
 
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
@@ -83,13 +98,30 @@ public class PrimaryController : MonoBehaviour
 
         BodySmoothingTime = Mathf.Lerp(BodySmoothingTime, NewSmoothingTime, Time.deltaTime);
 
-        UpdateBodyAndHeadPosition();
-
-        // jump
-        if (Input.GetKey(KeyCode.LeftControl) && IsGrounded())
+        // Hovering/Flying
+        if (Input.GetKey(KeyCode.LeftControl))
         {
-            rb.AddForce(Vector3.up * JumpVelocity, ForceMode.Impulse);
+            rb.AddForce(Vector3.up * HoverVelocity, ForceMode.Force);
+
+            if (rb.velocity.magnitude >= MaxHoverVelocity)
+            {
+                rb.velocity = Vector3.ClampMagnitude(rb.velocity, MaxHoverVelocity);
+            }
+
+            float yDistance = Roller.transform.position.y - launchPoint.y;
+
+            if (yDistance >= MaxFlyHeight)
+            {
+                rb.constraints = RigidbodyConstraints.FreezePositionY; 
+            }
+
         }
+        else if (Input.GetKeyUp(KeyCode.LeftControl))
+        {
+            rb.constraints = RigidbodyConstraints.None;
+        }
+
+        UpdateBodyAndHeadPosition();
     }
 
     void UpdateBodyAndHeadPosition()
@@ -106,6 +138,6 @@ public class PrimaryController : MonoBehaviour
 
     bool IsGrounded()
     {
-        return Physics.Raycast(Roller.transform.position, -Vector3.up, distanceToGround + 0.1f);
+        return Physics.Raycast(Roller.transform.position, -Vector3.up, distanceToGround + 0.5f);
     }
 }
